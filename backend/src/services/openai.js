@@ -50,10 +50,12 @@ No incluyas markdown, explicaciones ni nada más. Solo el JSON puro.`;
   const response = await openai.chat.completions.create({
     model,
     messages: [{ role: 'user', content: prompt }],
-    response_format: { type: 'json_object' },
+    response_format: { type: 'json_object' }
   });
 
-  const content = response.choices[0].message.content;
+  let content = response.choices[0].message.content;
+  content = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+  
   const parsed = JSON.parse(content);
 
   if (!parsed.tweets || !Array.isArray(parsed.tweets)) {
