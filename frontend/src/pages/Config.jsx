@@ -204,7 +204,7 @@ export default function Config() {
         <p className="text-sm text-gray-400">
           Comprueba que las credenciales configuradas en{' '}
           <code className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300 text-xs">backend/.env</code>{' '}
-          son correctas.
+          son correctas. Esta prueba valida la autenticacion, pero X puede seguir rechazando la publicacion si tu plan API no permite escribir tweets.
         </p>
         <button
           onClick={handleVerifyTwitter}

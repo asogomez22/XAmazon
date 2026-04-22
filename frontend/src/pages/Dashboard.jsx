@@ -64,10 +64,11 @@ export default function Dashboard() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Total Links', value: stats.total, color: 'text-blue-400' },
           { label: 'Pendientes', value: stats.pending, color: 'text-yellow-400' },
+          { label: 'Drafts', value: stats.drafts, color: 'text-gray-300' },
           { label: 'Publicados', value: stats.published, color: 'text-green-400' },
           { label: 'Fallidos', value: stats.failed, color: 'text-red-400' },
         ].map(({ label, value, color }) => (
@@ -133,16 +134,23 @@ export default function Dashboard() {
       </div>
 
       <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
-        <h2 className="text-lg font-semibold mb-4">Ultimos hilos publicados</h2>
+        <h2 className="text-lg font-semibold mb-4">Ultimos hilos generados</h2>
         {recentTweets.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No hay hilos publicados aun</p>
+          <p className="text-gray-500 text-center py-8">No hay hilos generados aun</p>
         ) : (
           <div className="space-y-3">
             {recentTweets.map((thread) => (
               <div key={thread.id} className="border border-gray-800 rounded-lg p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-gray-200 text-sm line-clamp-2">{thread.thread_content[0]}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-gray-200 text-sm line-clamp-2">{thread.thread_content[0]}</p>
+                      {thread.tweet_ids.length === 0 && (
+                        <span className="text-[10px] uppercase tracking-wide text-gray-400 border border-gray-700 rounded px-1.5 py-0.5">
+                          Draft
+                        </span>
+                      )}
+                    </div>
                     <p className="text-gray-500 text-xs mt-1">
                       {thread.thread_content.length} tweets &middot;{' '}
                       {new Date(thread.created_at).toLocaleString('es-ES')}

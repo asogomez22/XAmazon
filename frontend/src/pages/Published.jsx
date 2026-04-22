@@ -19,7 +19,7 @@ export default function Published() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Hilos Publicados</h1>
+        <h1 className="text-2xl font-bold">Hilos Generados</h1>
         <span className="text-sm text-gray-400">{threads.length} hilos</span>
       </div>
 
@@ -27,7 +27,7 @@ export default function Published() {
         <div className="text-gray-400 text-center py-12">Cargando...</div>
       ) : threads.length === 0 ? (
         <div className="text-gray-500 text-center py-12 bg-gray-900 rounded-xl border border-gray-800">
-          No hay hilos publicados aun. El bot publicara cuando haya links pendientes.
+          No hay hilos generados aun. El bot creara uno cuando haya links pendientes.
         </div>
       ) : (
         <div className="space-y-4">

@@ -3,12 +3,14 @@ import { linksApi } from '../api';
 
 const STATUS_LABEL = {
   pending: 'Pendiente',
+  draft: 'Draft',
   published: 'Publicado',
   failed: 'Fallido',
 };
 
 const STATUS_STYLE = {
   pending: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
+  draft: 'bg-gray-800 text-gray-300 border-gray-700',
   published: 'bg-green-900/40 text-green-400 border-green-800',
   failed: 'bg-red-900/40 text-red-400 border-red-800',
 };
@@ -135,7 +137,7 @@ export default function Links() {
       )}
 
       <div className="flex gap-2">
-        {['all', 'pending', 'published', 'failed'].map((f) => (
+        {['all', 'pending', 'draft', 'published', 'failed'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -188,7 +190,7 @@ export default function Links() {
                 <p className="text-gray-600 text-xs mt-1">
                   Anadido: {new Date(link.created_at).toLocaleString('es-ES')}
                   {link.published_at &&
-                    ` · Publicado: ${new Date(link.published_at).toLocaleString('es-ES')}`}
+                    ` | ${link.status === 'draft' ? 'Generado' : 'Publicado'}: ${new Date(link.published_at).toLocaleString('es-ES')}`}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">

@@ -15,6 +15,62 @@ function getClient() {
   });
 }
 
+function getErrorStatusCode(error) {
+  const candidates = [
+    error?.code,
+    error?.status,
+    error?.statusCode,
+    error?.response?.status,
+    error?.response?.statusCode,
+  ];
+
+  for (const candidate of candidates) {
+    const parsed = Number(candidate);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function getErrorDetail(error) {
+  if (Array.isArray(error?.data?.errors) && error.data.errors.length > 0) {
+    return error.data.errors
+      .map((item) => item?.message || item?.detail || item?.title)
+      .filter(Boolean)
+      .join(' | ');
+  }
+
+  return (
+    error?.data?.detail ||
+    error?.data?.title ||
+    error?.response?.data?.detail ||
+    error?.response?.data?.title ||
+    error?.message ||
+    'Error desconocido al publicar en X'
+  );
+}
+
+export function isTwitterPaymentRequiredError(error) {
+  return getErrorStatusCode(error) === 402;
+}
+
+export function getTwitterPublishErrorMessage(error) {
+  const statusCode = getErrorStatusCode(error);
+  const detail = getErrorDetail(error);
+
+  if (statusCode === 402) {
+    return `X/Twitter ha rechazado la publicacion con codigo 402. Tu plan o acceso API no permite publicar tweets con estas credenciales. ${detail}`.trim();
+  }
+
+  if (statusCode) {
+    return `X/Twitter ha rechazado la publicacion con codigo ${statusCode}. ${detail}`.trim();
+  }
+
+  return detail;
+}
+
 export async function postThread(tweets) {
   const client = getClient();
   const rwClient = client.readWrite;

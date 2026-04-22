@@ -40,6 +40,7 @@ router.get('/status', (req, res) => {
   const stats = {
     total: db.prepare('SELECT COUNT(*) as n FROM affiliate_links').get().n,
     pending: db.prepare("SELECT COUNT(*) as n FROM affiliate_links WHERE status = 'pending'").get().n,
+    drafts: db.prepare("SELECT COUNT(*) as n FROM affiliate_links WHERE status = 'draft'").get().n,
     published: db.prepare("SELECT COUNT(*) as n FROM affiliate_links WHERE status = 'published'").get().n,
     failed: db.prepare("SELECT COUNT(*) as n FROM affiliate_links WHERE status = 'failed'").get().n,
   };

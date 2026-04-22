@@ -1,9 +1,26 @@
 import cron from 'node-cron';
 import db from '../db.js';
 import { generateThread } from './openai.js';
-import { postThread } from './twitter.js';
+import {
+  getTwitterPublishErrorMessage,
+  isTwitterPaymentRequiredError,
+  postThread,
+} from './twitter.js';
 
 let job = null;
+
+function saveGeneratedThread(linkId, tweetIds, tweets) {
+  db.prepare(
+    'INSERT INTO published_tweets (link_id, tweet_ids, thread_content) VALUES (?, ?, ?)'
+  ).run(linkId, JSON.stringify(tweetIds), JSON.stringify(tweets));
+}
+
+function markLinkStatus(linkId, status) {
+  db.prepare("UPDATE affiliate_links SET status = ?, published_at = datetime('now') WHERE id = ?").run(
+    status,
+    linkId
+  );
+}
 
 export function startScheduler() {
   if (job) job.stop();
@@ -68,25 +85,34 @@ export async function runBotCycle() {
     });
 
     let tweetIds = [];
+    let resultStatus = 'draft';
+    let resultMessage = `Hilo guardado como draft con ${tweets.length} tweets`;
 
     if (config.auto_post === 'true') {
-      tweetIds = await postThread(tweets);
-      console.log(`[Bot] Hilo publicado con ${tweetIds.length} tweets`);
+      try {
+        tweetIds = await postThread(tweets);
+        console.log(`[Bot] Hilo publicado con ${tweetIds.length} tweets`);
+        resultStatus = 'posted';
+        resultMessage = `Hilo publicado con ${tweetIds.length} tweets`;
+      } catch (error) {
+        if (!isTwitterPaymentRequiredError(error)) {
+          throw error;
+        }
+
+        const publishError = getTwitterPublishErrorMessage(error);
+        console.warn(`[Bot] ${publishError}`);
+        resultMessage = `Hilo generado y guardado como draft. ${publishError}`;
+      }
     } else {
       console.log('[Bot] Auto-post desactivado - guardado como draft');
     }
 
-    db.prepare(
-      'INSERT INTO published_tweets (link_id, tweet_ids, thread_content) VALUES (?, ?, ?)'
-    ).run(link.id, JSON.stringify(tweetIds), JSON.stringify(tweets));
-
-    db.prepare(
-      "UPDATE affiliate_links SET status = 'published', published_at = datetime('now') WHERE id = ?"
-    ).run(link.id);
+    saveGeneratedThread(link.id, tweetIds, tweets);
+    markLinkStatus(link.id, resultStatus === 'posted' ? 'published' : 'draft');
 
     return {
-      status: 'posted',
-      message: `Hilo ${config.auto_post === 'true' ? 'publicado' : 'guardado como draft'} con ${tweets.length} tweets`,
+      status: resultStatus,
+      message: resultMessage,
       tweets,
       tweetIds,
     };
