@@ -11,6 +11,7 @@ export const linksApi = {
 
 export const tweetsApi = {
   getAll: () => api.get('/tweets'),
+  publishDraft: (id) => api.post(`/tweets/${id}/publish`),
 };
 
 export const botApi = {
